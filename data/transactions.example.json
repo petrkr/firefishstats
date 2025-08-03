@@ -1,0 +1,129 @@
+{
+  "transactions": [
+    {
+      "transactionId": "RLZ-1234567890",
+      "category": "DOMESTIC",
+      "type": "DEBIT",
+      "code": "376D",
+      "codeI18N": "Odchozí úhrada",
+      "partnerAccount": {
+        "number": "1234567890",
+        "bankCode": "0100"
+      },
+      "amount": {
+        "value": "25000",
+        "currency": "CZK"
+      },
+      "exchangeRate": "1",
+      "effectiveDate": "2024-12-15",
+      "cardAuthorizationDate": "2024-12-15",
+      "remittanceInfo": "abc123def",
+      "userNote": "Okamžitá platba",
+      "balance": {
+        "value": "75000",
+        "currency": "CZK"
+      },
+      "paymentOrderId": "REQ-123456789"
+    },
+    {
+      "transactionId": "RLZ-1234567891",
+      "category": "DOMESTIC",
+      "type": "CREDIT",
+      "code": "376C",
+      "codeI18N": "Příchozí úhrada",
+      "partnerAccount": {
+        "number": "9876543210",
+        "bankCode": "0200",
+        "partnerName": "Novák Jan"
+      },
+      "amount": {
+        "value": "30500",
+        "currency": "CZK"
+      },
+      "exchangeRate": "1",
+      "effectiveDate": "2024-12-20",
+      "cardAuthorizationDate": "2024-12-20",
+      "remittanceInfo": "abc123def",
+      "balance": {
+        "value": "105500",
+        "currency": "CZK"
+      },
+      "paymentOrderId": "REQ-123456790"
+    },
+    {
+      "transactionId": "RLZ-1234567892",
+      "category": "DOMESTIC",
+      "type": "CREDIT",
+      "code": "19C",
+      "codeI18N": "Příchozí úhrada",
+      "partnerAccount": {
+        "number": "102359436",
+        "bankCode": "2250",
+        "partnerName": "Vlastní účet"
+      },
+      "amount": {
+        "value": "50000",
+        "currency": "CZK"
+      },
+      "exchangeRate": "1",
+      "effectiveDate": "2024-12-10",
+      "cardAuthorizationDate": "2024-12-10",
+      "balance": {
+        "value": "50000",
+        "currency": "CZK"
+      },
+      "paymentOrderId": "REQ-123456788"
+    },
+    {
+      "transactionId": "RLZ-1234567893",
+      "category": "DOMESTIC",
+      "type": "DEBIT",
+      "code": "376D",
+      "codeI18N": "Odchozí úhrada",
+      "partnerAccount": {
+        "number": "5555666777",
+        "bankCode": "0300"
+      },
+      "amount": {
+        "value": "2000",
+        "currency": "CZK"
+      },
+      "exchangeRate": "1",
+      "effectiveDate": "2024-12-22",
+      "cardAuthorizationDate": "2024-12-22",
+      "remittanceInfo": "xyz789abc ret",
+      "userNote": "Okamžitá platba",
+      "balance": {
+        "value": "103500",
+        "currency": "CZK"
+      },
+      "paymentOrderId": "REQ-123456791"
+    },
+    {
+      "transactionId": "RLZ-1234567894",
+      "category": "DOMESTIC",
+      "type": "CREDIT",
+      "code": "376C",
+      "codeI18N": "Příchozí úhrada",
+      "partnerAccount": {
+        "number": "8888999000",
+        "bankCode": "0400",
+        "partnerName": "Svoboda Pavel"
+      },
+      "amount": {
+        "value": "22500",
+        "currency": "CZK"
+      },
+      "exchangeRate": "1",
+      "effectiveDate": "2024-12-25",
+      "cardAuthorizationDate": "2024-12-25",
+      "remittanceInfo": "xyz789abc",
+      "balance": {
+        "value": "126000",
+        "currency": "CZK"
+      },
+      "paymentOrderId": "REQ-123456792"
+    }
+  ],
+  "itemCount": 5
+}

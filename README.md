@@ -9,6 +9,7 @@ Flask web application for analyzing investment account statistics from Creditas 
 - 💰 Automatic categorization of deposits, withdrawals, and investments
 - 📈 Investment matching with returns based on remittance info
 - 🇨🇿 Czech language interface
+- 📊 Example data included for testing
 
 ## Setup
 
@@ -42,6 +43,12 @@ Flask web application for analyzing investment account statistics from Creditas 
    # Make sure virtual environment is activated
    source venv/bin/activate  # On Windows: venv\Scripts\activate
    python app.py
+   ```
+
+6. **Testing with example data**
+   ```bash
+   # Copy example data for testing (optional)
+   cp data/transactions.example.json data/transactions.json
    ```
 
 ## Usage

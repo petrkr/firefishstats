@@ -30,7 +30,8 @@ Thumbs.db
 logs/
 
 # Data files (may contain sensitive information)
-data/transactions*.json
+data/transactions.json
+data/transactionsnew.json
 
 # Backup files
 *.bak
