@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Investiční účet – Statistiky</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        h2 { margin-top: 2em; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
+        th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .refresh-btn { 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-bottom: 1em;
+        }
+        .refresh-btn:hover { background-color: #0056b3; }
+        .refresh-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .status.success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .status.error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Statistiky investičního účtu</h1>
+    
+    <button id="refreshBtn" class="refresh-btn" onclick="refreshData()">🔄 Aktualizovat data</button>
+    <div id="status"></div>
+
+    <ul>
+        <li>Počet vkladů: {{ stats.num_deposits }}</li>
+        <li>Celkem vloženo: {{ stats.deposited_total }} CZK</li>
+        <li>Počet výběrů: {{ stats.num_withdrawals }}</li>
+        <li>Počet investic: {{ stats.num_investments }}</li>
+        <li>Vrácené investice: {{ stats.matched_investments }}</li>
+        <li>Investováno: {{ stats.total_invested }} CZK</li>
+        <li>Vráceno: {{ stats.total_returned }} CZK</li>
+        <li>Součet zisků z investic: <strong>{{ stats.total_profit }} CZK</strong></li>
+        <li>Aktuální stav účtu: <strong>{{ stats.current_balance }} CZK</strong></li>
+    </ul>
+
+    <h2>Investice a návraty</h2>
+    <table>
+        <tr>
+            <th>Remittance</th>
+            <th>Investice (−)</th>
+            <th>Návraty (+)</th>
+            <th>Vrácení přeplatku (−)</th>
+            <th>Čistý zisk</th>
+        </tr>
+        {% for row in investment_rows %}
+        <tr>
+            <td>{{ row.remittance }}</td>
+    
+            <td>
+                {% for tx in row.investments %}
+                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
+                {% endfor %}
+                <strong>Celkem: {{ row.invested_total }} CZK</strong>
+            </td>
+    
+            <td>
+                {% for tx in row.returns %}
+                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
+                {% endfor %}
+                <strong>Celkem: {{ row.returned_total }} CZK</strong>
+            </td>
+    
+            <td>
+                {% for tx in row.overpayments %}
+                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
+                {% endfor %}
+                <strong>Celkem: {{ row.overpaid_total }} CZK</strong>
+            </td>
+    
+            <td>
+                {% if row.profit is not none %}
+                    <strong style="color: green">{{ "%.2f"|format(row.profit) }} CZK</strong>
+                {% else %}
+                    <em>zatím nevráceno</em>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    
+
+    <h2>Vklady</h2>
+    <table>
+        <tr>
+            <th>ID</th><th>Datum</th><th>Částka</th><th>Partner</th>
+        </tr>
+        {% for tx in deposits %}
+        <tr>
+            <td>{{ tx.transactionId }}</td>
+            <td>{{ tx.effectiveDate }}</td>
+            <td>{{ tx.amount.value }}</td>
+            <td>{{ tx.partnerAccount.partnerName or '' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Výběry</h2>
+    <table>
+        <tr>
+            <th>ID</th><th>Datum</th><th>Částka</th><th>Partner</th>
+        </tr>
+        {% for tx in withdrawals %}
+        <tr>
+            <td>{{ tx.transactionId }}</td>
+            <td>{{ tx.effectiveDate }}</td>
+            <td>{{ tx.amount.value }}</td>
+            <td>{{ tx.partnerAccount.partnerName or '' }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <script>
+    async function refreshData() {
+        const btn = document.getElementById('refreshBtn');
+        const status = document.getElementById('status');
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Načítám...';
+        status.innerHTML = '';
+        
+        try {
+            const response = await fetch('/api/refresh');
+            const result = await response.json();
+            
+            if (result.success) {
+                status.innerHTML = `<div class="status success">${result.message}</div>`;
+                // Reload page after successful refresh
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                status.innerHTML = `<div class="status error">Chyba: ${result.error}</div>`;
+            }
+        } catch (error) {
+            status.innerHTML = `<div class="status error">Chyba při komunikaci se serverem: ${error.message}</div>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔄 Aktualizovat data';
+        }
+    }
+    </script>
+</body>
+</html>
