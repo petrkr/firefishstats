@@ -59,7 +59,3 @@ Flask web application for analyzing investment account statistics from Creditas 
 ## Architecture
 
 See [CLAUDE.md](CLAUDE.md) for detailed technical documentation.
-
-## License
-
-Private project - not for redistribution.
