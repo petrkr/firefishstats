@@ -18,8 +18,10 @@ Flask web application for analyzing investment account statistics from Creditas 
    cd firefishstats
    ```
 
-2. **Install dependencies**
+2. **Create virtual environment and install dependencies**
    ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
 
@@ -37,6 +39,8 @@ Flask web application for analyzing investment account statistics from Creditas 
 
 5. **Run the application**
    ```bash
+   # Make sure virtual environment is activated
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    python app.py
    ```
 
