@@ -33,14 +33,14 @@
 
     <ul>
         <li>Počet vkladů: {{ stats.num_deposits }}</li>
-        <li>Celkem vloženo: {{ stats.deposited_total }} CZK</li>
+        <li>Celkem vloženo: {{ stats.deposited_total }} {{ currency }}</li>
         <li>Počet výběrů: {{ stats.num_withdrawals }}</li>
         <li>Počet investic: {{ stats.num_investments }}</li>
         <li>Vrácené investice: {{ stats.matched_investments }}</li>
-        <li>Investováno: {{ stats.total_invested }} CZK</li>
-        <li>Vráceno: {{ stats.total_returned }} CZK</li>
-        <li>Součet zisků z investic: <strong>{{ stats.total_profit }} CZK</strong></li>
-        <li>Aktuální stav účtu: <strong>{{ stats.current_balance }} CZK</strong></li>
+        <li>Investováno: {{ stats.total_invested }} {{ currency }}</li>
+        <li>Vráceno: {{ stats.total_returned }} {{ currency }}</li>
+        <li>Součet zisků z investic: <strong>{{ stats.total_profit }} {{ currency }}</strong></li>
+        <li>Aktuální stav účtu: <strong>{{ stats.current_balance }} {{ currency }}</strong></li>
     </ul>
 
     <h2>Investice a návraty</h2>
@@ -57,30 +57,30 @@
 
             <td>
                 {% for tx in row.investments %}
-                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
+                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} {{ tx.amount.currency }}</div>
                 {% endfor %}
-                <strong>Celkem: {{ row.invested_total }} CZK</strong>
+                <strong>Celkem: {{ row.invested_total }} {{ row.currency }}</strong>
             </td>
 
             <td>
                 {% for tx in row.returns %}
-                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
+                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} {{ tx.amount.currency }}</div>
                 {% endfor %}
-                <strong>Celkem: {{ row.returned_total }} CZK</strong>
+                <strong>Celkem: {{ row.returned_total }} {{ row.currency }}</strong>
 
                 {% if row.overpaid_total > 0 %}
                     <hr style="margin: 8px 0; border: none; border-top: 1px solid #ddd;">
                     <div style="color: #d9534f; font-style: italic;">Vrácení přeplatku:</div>
                     {% for tx in row.overpayments %}
-                        <div style="color: #d9534f;">{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
+                        <div style="color: #d9534f;">{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} {{ tx.amount.currency }}</div>
                     {% endfor %}
-                    <strong style="color: #d9534f;">Celkem: −{{ row.overpaid_total }} CZK</strong>
+                    <strong style="color: #d9534f;">Celkem: −{{ row.overpaid_total }} {{ row.currency }}</strong>
                 {% endif %}
             </td>
 
             <td>
                 {% if row.profit is not none %}
-                    <strong style="color: green">{{ "%.2f"|format(row.profit) }} CZK</strong>
+                    <strong style="color: green">{{ "%.2f"|format(row.profit) }} {{ row.currency }}</strong>
                 {% else %}
                     <em>zatím nevráceno</em>
                 {% endif %}
@@ -99,7 +99,7 @@
         <tr>
             <td>{{ tx.transactionId }}</td>
             <td>{{ tx.effectiveDate }}</td>
-            <td>{{ tx.amount.value }}</td>
+            <td>{{ tx.amount.value }} {{ tx.amount.currency }}</td>
             <td>{{ tx.partnerAccount.partnerName or '' }}</td>
         </tr>
         {% endfor %}
@@ -114,7 +114,7 @@
         <tr>
             <td>{{ tx.transactionId }}</td>
             <td>{{ tx.effectiveDate }}</td>
-            <td>{{ tx.amount.value }}</td>
+            <td>{{ tx.amount.value }} {{ tx.amount.currency }}</td>
             <td>{{ tx.partnerAccount.partnerName or '' }}</td>
         </tr>
         {% endfor %}

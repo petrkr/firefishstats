@@ -58,6 +58,13 @@ def index():
 
         net_profit = returned_total - invested_total - overpaid_total if returned_total else None
 
+        # Get currency from first available transaction
+        currency = None
+        for tx in inv_list + ret_list + overpay_list:
+            if "amount" in tx and "currency" in tx["amount"]:
+                currency = tx["amount"]["currency"]
+                break
+
         investment_rows.append({
             "remittance": remit,
             "investments": inv_list,
@@ -66,7 +73,8 @@ def index():
             "invested_total": invested_total,
             "returned_total": returned_total,
             "overpaid_total": overpaid_total,
-            "profit": net_profit
+            "profit": net_profit,
+            "currency": currency
         })
 
     stats = compute_stats(deposits, withdrawals, investment_rows)
@@ -74,10 +82,18 @@ def index():
     stats["current_balance"] = current_balance
     stats["total_profit"] = sum(row["profit"] for row in investment_rows if row["profit"] is not None)
 
+    # Get currency from first available transaction
+    currency = None
+    if transactions:
+        for tx in transactions:
+            if "amount" in tx and "currency" in tx["amount"]:
+                currency = tx["amount"]["currency"]
+                break
+
     investment_rows.sort(key=get_sort_date, reverse=True)
 
     return render_template("index.html", stats=stats, investment_rows=investment_rows,
-                       deposits=deposits, withdrawals=withdrawals)
+                       deposits=deposits, withdrawals=withdrawals, currency=currency)
 
 
 @app.route("/api/refresh")
