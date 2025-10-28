@@ -49,34 +49,35 @@
             <th>Remittance</th>
             <th>Investice (−)</th>
             <th>Návraty (+)</th>
-            <th>Vrácení přeplatku (−)</th>
             <th>Čistý zisk</th>
         </tr>
         {% for row in investment_rows %}
         <tr>
             <td>{{ row.remittance }}</td>
-    
+
             <td>
                 {% for tx in row.investments %}
                     <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
                 {% endfor %}
                 <strong>Celkem: {{ row.invested_total }} CZK</strong>
             </td>
-    
+
             <td>
                 {% for tx in row.returns %}
                     <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
                 {% endfor %}
                 <strong>Celkem: {{ row.returned_total }} CZK</strong>
+
+                {% if row.overpaid_total > 0 %}
+                    <hr style="margin: 8px 0; border: none; border-top: 1px solid #ddd;">
+                    <div style="color: #d9534f; font-style: italic;">Vrácení přeplatku:</div>
+                    {% for tx in row.overpayments %}
+                        <div style="color: #d9534f;">{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
+                    {% endfor %}
+                    <strong style="color: #d9534f;">Celkem: −{{ row.overpaid_total }} CZK</strong>
+                {% endif %}
             </td>
-    
-            <td>
-                {% for tx in row.overpayments %}
-                    <div>{{ tx.transactionId }} – {{ tx.effectiveDate }} – {{ tx.amount.value }} CZK</div>
-                {% endfor %}
-                <strong>Celkem: {{ row.overpaid_total }} CZK</strong>
-            </td>
-    
+
             <td>
                 {% if row.profit is not none %}
                     <strong style="color: green">{{ "%.2f"|format(row.profit) }} CZK</strong>
