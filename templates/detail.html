@@ -2,20 +2,30 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Investiční účet – Statistiky</title>
+    <title>{{ account.name }} – Statistiky</title>
     <style>
         body { font-family: sans-serif; margin: 2em; }
         h2 { margin-top: 2em; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
         th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
         th { background-color: #f4f4f4; }
-        .refresh-btn { 
-            background-color: #007bff; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 5px; 
-            cursor: pointer; 
+        .back-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .back-btn:hover { background-color: #5a6268; }
+        .refresh-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
             margin-bottom: 1em;
         }
         .refresh-btn:hover { background-color: #0056b3; }
@@ -23,12 +33,16 @@
         .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
         .status.success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
         .status.error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .header-actions { margin-bottom: 1em; }
     </style>
 </head>
 <body>
-    <h1>Statistiky investičního účtu</h1>
-    
-    <button id="refreshBtn" class="refresh-btn" onclick="refreshData()">🔄 Aktualizovat data</button>
+    <h1>{{ account.name }}</h1>
+
+    <div class="header-actions">
+        <a href="/" class="back-btn">← Zpět na dashboard</a>
+        <button id="refreshBtn" class="refresh-btn" onclick="refreshData()">🔄 Aktualizovat data</button>
+    </div>
     <div id="status"></div>
 
     <ul>
@@ -124,15 +138,16 @@
     async function refreshData() {
         const btn = document.getElementById('refreshBtn');
         const status = document.getElementById('status');
-        
+        const accountId = '{{ account.id }}';
+
         btn.disabled = true;
         btn.textContent = '⏳ Načítám...';
         status.innerHTML = '';
-        
+
         try {
-            const response = await fetch('/api/refresh');
+            const response = await fetch(`/api/refresh/${accountId}`);
             const result = await response.json();
-            
+
             if (result.success) {
                 status.innerHTML = `<div class="status success">${result.message}</div>`;
                 // Reload page after successful refresh

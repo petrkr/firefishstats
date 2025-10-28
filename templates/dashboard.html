@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard – Investiční účty</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; }
+        h2 { margin-top: 2em; }
+        .accounts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5em;
+            margin-top: 2em;
+        }
+        .account-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5em;
+            background: #f9f9f9;
+            transition: box-shadow 0.2s;
+        }
+        .account-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .account-card.error {
+            background: #fee;
+            border-color: #faa;
+        }
+        .account-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 0.5em;
+        }
+        .account-stats {
+            margin: 1em 0;
+        }
+        .account-stats div {
+            margin: 0.3em 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .profit-positive {
+            color: green;
+        }
+        .profit-negative {
+            color: red;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: #c00;
+            font-size: 0.9em;
+            margin-top: 0.5em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dashboard – Investiční účty</h1>
+
+    <div class="accounts-grid">
+        {% for account in accounts %}
+        <div class="account-card {% if account.error %}error{% endif %}">
+            <div class="account-name">{{ account.name }}</div>
+
+            {% if account.error %}
+                <div class="error-message">
+                    Chyba při načítání dat: {{ account.error }}
+                </div>
+            {% else %}
+                <div class="account-stats">
+                    <div>
+                        <span class="stat-label">Aktuální stav:</span>
+                        <span class="stat-value">{{ account.current_balance }} {{ account.currency }}</span>
+                    </div>
+                    <div>
+                        <span class="stat-label">Celkový zisk:</span>
+                        <span class="stat-value {% if account.total_profit > 0 %}profit-positive{% elif account.total_profit < 0 %}profit-negative{% endif %}">
+                            {{ "%.2f"|format(account.total_profit) }} {{ account.currency }}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="stat-label">Počet investic:</span>
+                        <span class="stat-value">{{ account.num_investments }}</span>
+                    </div>
+                </div>
+
+                <a href="/detail/{{ account.id }}" class="btn">Zobrazit detail</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>
