@@ -1,9 +1,9 @@
 import os
 import logging
-from flask import Flask, render_template, jsonify, flash, redirect, url_for
+from flask import Flask, render_template, jsonify, abort
 from utils import load_transactions, classify_transactions, compute_stats, compute_account_balance
-from api_client import CreditasAPIClient
-from config import config
+from banks import get_bank_client
+from config import config, load_accounts_from_config
 from decimal import Decimal
 from datetime import datetime
 
@@ -24,27 +24,29 @@ def get_sort_date(row):
 
 def create_app(config_name=None):
     app = Flask(__name__)
-    
+
     # Load configuration
     config_name = config_name or os.environ.get('FLASK_ENV', 'development')
     app.config.from_object(config[config_name])
-    
+
     # Setup logging
     if not app.debug:
         logging.basicConfig(level=logging.INFO)
-    
+
     return app
+
 
 app = create_app()
 
-@app.route("/")
-def index():
-    known_accounts = app.config['KNOWN_ACCOUNTS']
-    transactions = load_transactions(app.config['TRANSACTIONS_FILE'])
-    deposits, withdrawals, investments, returns, overpayments = classify_transactions(transactions, known_accounts)
+
+def process_account_data(account):
+    """Process transaction data for a single account"""
+    transactions = load_transactions(account.transactions_file)
+    deposits, withdrawals, investments, returns, overpayments = classify_transactions(
+        transactions, account.known_accounts
+    )
 
     investment_rows = []
-
     all_remittances = set(investments) | set(returns) | set(overpayments)
 
     for remit in sorted(all_remittances):
@@ -92,57 +94,106 @@ def index():
 
     investment_rows.sort(key=get_sort_date, reverse=True)
 
-    return render_template("index.html", stats=stats, investment_rows=investment_rows,
-                       deposits=deposits, withdrawals=withdrawals, currency=currency)
+    return {
+        "stats": stats,
+        "investment_rows": investment_rows,
+        "deposits": deposits,
+        "withdrawals": withdrawals,
+        "currency": currency
+    }
 
 
-@app.route("/api/refresh")
-def refresh_data():
-    """Fetch fresh transaction data from Creditas API"""
+@app.route("/")
+def dashboard():
+    """Dashboard showing all accounts"""
+    accounts = load_accounts_from_config()
+
+    if not accounts:
+        return render_template("error.html",
+                             error="No accounts configured. Please create config.json from config.json.example")
+
+    account_summaries = []
+    for account in accounts:
+        try:
+            data = process_account_data(account)
+            account_summaries.append({
+                "id": account.id,
+                "name": account.name,
+                "currency": data["currency"],
+                "total_profit": data["stats"]["total_profit"],
+                "current_balance": data["stats"]["current_balance"],
+                "num_investments": data["stats"]["num_investments"]
+            })
+        except Exception as e:
+            app.logger.error(f"Error processing account {account.id}: {e}")
+            account_summaries.append({
+                "id": account.id,
+                "name": account.name,
+                "error": str(e)
+            })
+
+    return render_template("dashboard.html", accounts=account_summaries)
+
+
+@app.route("/detail/<account_id>")
+def account_detail(account_id):
+    """Detail view for a specific account"""
+    accounts = load_accounts_from_config()
+    account = next((acc for acc in accounts if acc.id == account_id), None)
+
+    if not account:
+        abort(404, description=f"Account '{account_id}' not found")
+
     try:
-        # Check if API credentials are configured
-        if not app.config['CREDITAS_API_TOKEN'] or not app.config['CREDITAS_ACCOUNT_ID']:
-            return jsonify({"error": "API credentials not configured"}), 500
-        
-        # Initialize API client
-        client = CreditasAPIClient(
-            app.config['CREDITAS_API_TOKEN'],
-            app.config['CREDITAS_ACCOUNT_ID'],
-            app.config['CREDITAS_API_BASE_URL']
+        data = process_account_data(account)
+        return render_template("detail.html",
+                             account=account,
+                             stats=data["stats"],
+                             investment_rows=data["investment_rows"],
+                             deposits=data["deposits"],
+                             withdrawals=data["withdrawals"],
+                             currency=data["currency"])
+    except Exception as e:
+        app.logger.error(f"Error loading account {account_id}: {e}")
+        abort(500, description=f"Error loading account data: {e}")
+
+
+@app.route("/api/refresh/<account_id>")
+def refresh_account(account_id):
+    """Fetch fresh transaction data for a specific account"""
+    try:
+        accounts = load_accounts_from_config()
+        account = next((acc for acc in accounts if acc.id == account_id), None)
+
+        if not account:
+            return jsonify({"error": f"Account '{account_id}' not found"}), 404
+
+        # Initialize bank API client
+        client = get_bank_client(
+            account.bank,
+            account.api_token,
+            account.account_id
         )
-        
+
         # Fetch all transactions
         transactions = client.fetch_all_transactions()
         if transactions is None:
             return jsonify({"error": "Failed to fetch transactions from API"}), 500
-        
+
         # Save to file
-        success = client.save_transactions(transactions, app.config['TRANSACTIONS_FILE'])
+        success = client.save_transactions(transactions, account.transactions_file)
         if not success:
             return jsonify({"error": "Failed to save transactions"}), 500
-        
+
         return jsonify({
             "success": True,
-            "message": f"Successfully updated {len(transactions)} transactions",
+            "message": f"Successfully updated {len(transactions)} transactions for {account.name}",
             "count": len(transactions)
         })
-        
+
     except Exception as e:
-        app.logger.error(f"Error refreshing data: {e}")
+        app.logger.error(f"Error refreshing account {account_id}: {e}")
         return jsonify({"error": "Internal server error"}), 500
-
-
-@app.route("/api/status")
-def api_status():
-    """Check API configuration status"""
-    has_token = bool(app.config.get('CREDITAS_API_TOKEN'))
-    has_account_id = bool(app.config.get('CREDITAS_ACCOUNT_ID'))
-    
-    return jsonify({
-        "api_configured": has_token and has_account_id,
-        "has_token": has_token,
-        "has_account_id": has_account_id
-    })
 
 
 if __name__ == "__main__":

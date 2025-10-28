@@ -1,5 +1,6 @@
-# Environment variables
+# Environment variables and configuration
 .env
+config.json
 
 # Python
 __pycache__/
@@ -30,6 +31,7 @@ Thumbs.db
 logs/
 
 # Data files (may contain sensitive information)
+data/*_transactions.json
 data/transactions.json
 data/transactionsnew.json
 
