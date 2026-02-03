@@ -3,7 +3,7 @@ import logging
 from flask import Flask, render_template, jsonify, abort
 from utils import load_transactions, classify_transactions, compute_stats, compute_account_balance
 from banks import get_bank_client
-from config import config, load_accounts_from_config
+from config import config, load_accounts_from_config, load_remittance_rules
 from decimal import Decimal
 from datetime import datetime
 
@@ -41,9 +41,10 @@ app = create_app()
 
 def process_account_data(account):
     """Process transaction data for a single account"""
+    remittance_rules = load_remittance_rules()
     transactions = load_transactions(account.transactions_file)
     deposits, withdrawals, investments, returns, overpayments = classify_transactions(
-        transactions, account.known_accounts
+        transactions, account.known_accounts, remittance_rules
     )
 
     investment_rows = []

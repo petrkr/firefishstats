@@ -66,6 +66,31 @@ def load_accounts_from_config(config_file: str = "config.json") -> list:
         return []
 
 
+def load_remittance_rules(config_file: str = "config.json") -> dict:
+    try:
+        with open(config_file, 'r', encoding='utf-8') as f:
+            config_data = json.load(f)
+
+        remittance = config_data.get('remittance', {})
+        apply_to = set(remittance.get('apply_to', []))
+        regex = remittance.get('regex', [])
+        if not isinstance(regex, list):
+            logger.error("Remittance regex must be a list")
+            regex = []
+
+        return {"apply_to": apply_to, "regex": regex}
+
+    except FileNotFoundError:
+        logger.error(f"Config file not found: {config_file}")
+        return {"apply_to": set(), "regex": []}
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in config file: {e}")
+        return {"apply_to": set(), "regex": []}
+    except Exception as e:
+        logger.error(f"Error loading config: {e}")
+        return {"apply_to": set(), "regex": []}
+
+
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-change-in-production'
     DEBUG = True

@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from collections import defaultdict
 from decimal import Decimal
 
@@ -24,16 +25,38 @@ def load_transactions(file_path):
         return []
 
 
-def classify_transactions(transactions, known_accounts):
+def _normalize_remittance(remittance, typ, rules):
+    if not remittance:
+        return remittance
+    if typ not in rules["apply_to"]:
+        return remittance
+    for pattern in rules["regex"]:
+        try:
+            match = re.match(pattern, remittance)
+        except re.error:
+            logger.warning(f"Invalid remittance regex: {pattern}")
+            continue
+        if match:
+            if match.lastindex:
+                return match.group(1).strip()
+            if "core" in match.groupdict():
+                return match.group("core").strip()
+            return match.group(0).strip()
+    return remittance
+
+
+def classify_transactions(transactions, known_accounts, remittance_rules=None):
     deposits = []
     withdrawals = []
     investments = defaultdict(list)
     returns = defaultdict(list)
     overpayments = defaultdict(list)
+    remittance_rules = remittance_rules or {"apply_to": set(), "regex": []}
 
     for tx in transactions:
         typ = tx.get("type")
         remittance = tx.get("remittanceInfo", "").strip()
+        remittance = _normalize_remittance(remittance, typ, remittance_rules)
         acc = tx.get("partnerAccount", {})
         acc_key = f"{acc.get('number')}/{acc.get('bankCode')}"
 

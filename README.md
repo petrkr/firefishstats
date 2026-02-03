@@ -57,6 +57,24 @@ Flask web application for analyzing investment account statistics from Creditas 
 - Click "🔄 Aktualizovat data" to fetch fresh transaction data
 - View investment statistics and profit calculations
 
+## Remittance normalization
+
+`config.json` supports optional remittance normalization for matching. If omitted, `remittanceInfo` is used as-is. Add a top-level `remittance` block with a list of regexes used to extract the core remittance ID (first capturing group). Rules apply only to transaction types listed in `apply_to`.
+
+Example:
+
+```json
+{
+  "remittance": {
+    "apply_to": ["CREDIT"],
+    "regex": [
+      "^([a-f0-9]{8})$",
+      "^\\?/DO\\d{4}-\\d{2}-\\d{2}/SP([a-f0-9]{8})$"
+    ]
+  }
+}
+```
+
 ## Security
 
 - All sensitive data (API tokens, account numbers) is stored in environment variables
