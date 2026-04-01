@@ -18,7 +18,8 @@
       "api_token": "your_creditas_api_token_here",
       "account_id": "your_creditas_account_id_here",
       "known_accounts": [
-        "your_account_number3/bank_code3"
+        "your_account_number3/bank_code3",
+        "Banka Creditas"
       ]
     }
   ],

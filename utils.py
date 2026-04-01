@@ -45,6 +45,21 @@ def _normalize_remittance(remittance, typ, rules):
     return remittance
 
 
+def _is_known_account_transaction(tx, known_accounts):
+    acc = tx.get("partnerAccount", {})
+    number = acc.get("number")
+    bank_code = acc.get("bankCode")
+    partner_name = (acc.get("partnerName") or "").strip()
+
+    if number and bank_code and f"{number}/{bank_code}" in known_accounts:
+        return True
+
+    if partner_name and partner_name in known_accounts:
+        return True
+
+    return False
+
+
 def classify_transactions(transactions, known_accounts, remittance_rules=None):
     deposits = []
     withdrawals = []
@@ -57,12 +72,11 @@ def classify_transactions(transactions, known_accounts, remittance_rules=None):
         typ = tx.get("type")
         remittance = tx.get("remittanceInfo", "").strip()
         remittance = _normalize_remittance(remittance, typ, remittance_rules)
-        acc = tx.get("partnerAccount", {})
-        acc_key = f"{acc.get('number')}/{acc.get('bankCode')}"
+        is_known = _is_known_account_transaction(tx, known_accounts)
 
-        if typ == "CREDIT" and acc_key in known_accounts:
+        if typ == "CREDIT" and is_known:
             deposits.append(tx)
-        elif typ == "DEBIT" and acc_key in known_accounts:
+        elif typ == "DEBIT" and is_known:
             withdrawals.append(tx)
         elif remittance:
             if typ == "DEBIT":
